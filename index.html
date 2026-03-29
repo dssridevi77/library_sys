@@ -1,0 +1,95 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Digital Library</title>
+
+    <!-- Bootstrap -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+
+  <body class="bg-light">
+    <div class="container mt-5">
+      <h1 class="text-center mb-4">📚 Digital Library</h1>
+      <input
+        id="search"
+        class="form-control mb-3"
+        placeholder="Search by title..."
+        onkeyup="searchBooks()"
+      />
+      <div class="card p-4 shadow">
+        <h4>Add Book</h4>
+
+        <input id="title" class="form-control mb-2" placeholder="Book Title" />
+        <input id="author" class="form-control mb-2" placeholder="Author" />
+        <input id="category" class="form-control mb-2" placeholder="Category" />
+
+        <button class="btn btn-primary w-100" onclick="addBook()">
+          Add Book
+        </button>
+      </div>
+
+      <div class="card p-4 shadow mt-4">
+        <h4>All Books</h4>
+        <ul id="bookList" class="list-group"></ul>
+      </div>
+    </div>
+
+    <script>
+      let allBooks = [];
+      async function addBook() {
+        await fetch("http://localhost:3000/addBook", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            title: title.value,
+            author: author.value,
+            category: category.value,
+          }),
+        });
+        loadBooks();
+      }
+
+      async function loadBooks() {
+        const res = await fetch("http://localhost:3000/books");
+        const data = await res.json();
+
+        allBooks = data; // ✅ store data
+        displayBooks(data);
+      }
+      async function deleteBook(id) {
+        await fetch(`http://localhost:3000/deleteBook/${id}`, {
+          method: "DELETE",
+        });
+
+        loadBooks();
+      }
+      function searchBooks() {
+        const query = document.getElementById("search").value.toLowerCase();
+
+        const filtered = allBooks.filter(
+          (b) =>
+            b.title.toLowerCase().includes(query) ||
+            b.author.toLowerCase().includes(query) ||
+            b.category.toLowerCase().includes(query),
+        );
+
+        displayBooks(filtered);
+      }
+      function displayBooks(data) {
+        bookList.innerHTML = data
+          .map(
+            (b) =>
+              `<li class="list-group-item d-flex justify-content-between">
+      ${b.title} - ${b.author}
+      <button onclick="deleteBook('${b._id}')" class="btn btn-danger btn-sm">Delete</button>
+    </li>`,
+          )
+          .join("");
+      }
+      loadBooks();
+    </script>
+  </body>
+</html>

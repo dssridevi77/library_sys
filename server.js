@@ -1,7 +1,9 @@
+const cors = require("cors");
 const express = require("express");
 const mongoose = require("mongoose");
-
+const text = item.children[0].innerText.toLowerCase();
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 // MongoDB connection
